@@ -1,0 +1,97 @@
+{
+  "entities": {
+    "Village": {
+      "title": "Village",
+      "description": "Represents a village in India with census and demographic information.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "state": { "type": "string" },
+        "district": { "type": "string" },
+        "subDistrict": { "type": "string" },
+        "censusCode": { "type": "string" },
+        "population": { "type": "integer" },
+        "households": { "type": "integer" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "state", "district", "censusCode"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Public and private user information for B2B portal.",
+      "type": "object",
+      "properties": {
+        "businessName": { "type": "string" },
+        "email": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "ACTIVE", "SUSPENDED"] },
+        "plan": { "type": "string", "enum": ["FREE", "PREMIUM", "PRO", "UNLIMITED"] },
+        "gstNumber": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "APIKey": {
+      "title": "API Key",
+      "description": "Programmatic access credentials for B2B users.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "keyName": { "type": "string" },
+        "apiKey": { "type": "string" },
+        "apiSecretHash": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "REVOKED"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "UsageLog": {
+      "title": "Usage Log",
+      "description": "Record of API requests for analytics and billing.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "apiKey": { "type": "string" },
+        "endpoint": { "type": "string" },
+        "statusCode": { "type": "integer" },
+        "responseTime": { "type": "integer" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "State": {
+      "title": "State",
+      "description": "Indian States.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "code": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "villages": {
+      "schema": "Village",
+      "description": "Global village registry."
+    },
+    "users": {
+      "schema": "UserProfile",
+      "description": "B2B User accounts."
+    },
+    "apiKeys": {
+      "schema": "APIKey",
+      "description": "Management of programmatic access."
+    },
+    "usageLogs": {
+      "schema": "UsageLog",
+      "description": "Analytics data."
+    },
+    "states": {
+      "schema": "State",
+      "description": "State level directory."
+    }
+  }
+}

@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+
+    // Entity Validations
+    function isValidVillage(data) {
+      return data.keys().hasAll(['name', 'state', 'district', 'censusCode']) 
+        && data.name is string && data.name.size() <= 200
+        && data.state is string && data.state.size() <= 100
+        && data.district is string && data.district.size() <= 100
+        && data.censusCode is string && data.censusCode.size() <= 20;
+    }
+
+    function isValidFavorite(data) {
+      return data.keys().hasAll(['userId', 'villageId', 'villageName', 'createdAt'])
+        && data.userId == request.auth.uid
+        && data.villageId is string && data.villageId.size() <= 128
+        && data.villageName is string && data.villageName.size() <= 200
+        && data.createdAt == request.time;
+    }
+
+    // Villages Collection
+    match /villages/{villageId} {
+      allow get: if true;
+      allow list: if true; // Public directory
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Favorites Collection
+    match /favorites/{favoriteId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isVerified() && isValidFavorite(incoming()) && isValidId(favoriteId)
+        && exists(/databases/$(database)/documents/villages/$(incoming().villageId));
+      allow delete: if isOwner(existing().userId);
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && incoming().role == 'user';
+      allow update: if isOwner(userId) && incoming().role == existing().role;
+    }
+  }
+}
