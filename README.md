@@ -36,9 +36,7 @@ Village API is a scalable B2B platform that provides access to India's village, 
 
 * Git
 * GitHub
-* ESLint
 * Prettier
-* TSX
 * Nodemon
 
 
